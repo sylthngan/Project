@@ -5,7 +5,7 @@ The app provides a clean UI, authentication system, property listings, favorites
 
 ---
 
-## ✨ Features
+## Features
 
 -  User Authentication
 -  Browse Rental Properties
