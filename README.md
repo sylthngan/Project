@@ -1,16 +1,42 @@
-# rental_room
+#  Rental Room Mobile App
 
-A new Flutter project.
+A modern Flutter rental application that helps users browse, search, and book rental properties easily.  
+The app provides a clean UI, authentication system, property listings, favorites, and booking features.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## ✨ Features
 
-A few resources to get you started if this is your first Flutter project:
+-  User Authentication
+-  Browse Rental Properties
+-  Search & Filter Listings
+-  Add Properties to Favorites
+-  User Profile Management
+-  Firebase Integration
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+##  Technologies Used
+
+- Flutter
+- Dart
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Storage
+- Provider / Riverpod / Bloc (depending on your project)
+- Google Sign-In
+
+---
+
+##  Project Structure
+
+```bash
+lib/
+│
+├── models/        # Data models
+├── screens/       # UI screens
+├── widgets/       # Reusable widgets
+├── services/      # Firebase & API services
+├── providers/     # State management
+├── utils/         # Utilities & constants
+└── main.dart      # Entry point
