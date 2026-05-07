@@ -33,10 +33,9 @@ The app provides a clean UI, authentication system, property listings, favorites
 ```bash
 lib/
 │
-├── models/        # Data models
-├── screens/       # UI screens
-├── widgets/       # Reusable widgets
-├── services/      # Firebase & API services
-├── providers/     # State management
-├── utils/         # Utilities & constants
-└── main.dart      # Entry point
+├── Login/        # Authorized
+├── Model/        # Data models
+├── Pages/        # Page for bottom navigation
+├── img/      
+├── style/    
+└── main.dart     # Entry point
