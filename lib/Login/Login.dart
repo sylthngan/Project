@@ -5,6 +5,7 @@ import 'package:rental_room/Login/AuthGG.dart';
 import 'package:rental_room/Login/CheckAuth.dart';
 
 import 'package:rental_room/Login/MyTextField.dart';
+import 'package:rental_room/Login/PassField.dart';
 import 'package:rental_room/Login/Register.dart';
 import 'package:rental_room/style/color.dart';
 import 'package:rental_room/style/styleButton_Text.dart';
@@ -23,7 +24,7 @@ class _LoginState extends State<Login> {
   TextEditingController passController = TextEditingController();
   final AuthService authService = AuthService();
   final AuthGg authGg = AuthGg();
-
+  bool hidePassword = true;
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -68,12 +69,18 @@ class _LoginState extends State<Login> {
 
                     ),
                     SizedBox(height: 25),
-                    myTextField(
-                      label: "Password",
+                    PasswordField(
                       controller: passController,
-                      isPass: true,
-                      icon: Icons.lock,
+                      label: "Password",
+                      obscureText: hidePassword,
 
+                      onToggle: () {
+                        setState(() {
+                          hidePassword = !hidePassword;
+                        });
+                      },
+
+                      icon: Icons.lock,
                     ),
                     SizedBox(height: 40),
 
@@ -149,7 +156,7 @@ class _LoginState extends State<Login> {
         onTap: () async {
           try {
             final user = await authGg.signInWithGoogle();
-
+            if (!mounted) return;
             if (user != null) {
               Navigator.pushAndRemoveUntil(
                 context,

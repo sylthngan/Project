@@ -6,6 +6,7 @@ import 'package:rental_room/Login/Login.dart';
 import '../style/color.dart';
 import '../style/styleButton_Text.dart';
 import 'MyTextField.dart';
+import 'PassField.dart';
 
 
 class Register extends StatefulWidget {
@@ -25,6 +26,7 @@ class _RegisterState extends State<Register> {
 
   AuthService authService = AuthService();
   AuthGg authGg = AuthGg();
+  bool hidePassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -105,20 +107,32 @@ class _RegisterState extends State<Register> {
 
                   ),
                   SizedBox(height: 25),
-                  myTextField(
-                    label: "Password",
+                  PasswordField(
                     controller: passController,
-                    isPass: true,
-                    icon: Icons.lock,
+                    label: "Password",
+                    obscureText: hidePassword,
 
+                    onToggle: () {
+                      setState(() {
+                        hidePassword = !hidePassword;
+                      });
+                    },
+
+                    icon: Icons.lock,
                   ),
                   SizedBox(height: 25),
-                  myTextField(
+                  PasswordField(
+                    controller: passController,
                     label: "Confirm Password",
-                    controller: confirmController,
-                    isPass: true,
-                    icon: Icons.lock,
+                    obscureText: hidePassword,
 
+                    onToggle: () {
+                      setState(() {
+                        hidePassword = !hidePassword;
+                      });
+                    },
+
+                    icon: Icons.lock,
                   ),
                   SizedBox(height: 25),
                   myTextField(

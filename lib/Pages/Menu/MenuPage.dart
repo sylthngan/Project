@@ -219,7 +219,7 @@ class _Menupage extends State<Menupage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(20.0),
-                  child: avt.isNotEmpty?Container(
+                  child: avt.isNotEmpty? Container(
                     child: CircleAvatar(
                       radius: 30,
                       backgroundImage: NetworkImage(

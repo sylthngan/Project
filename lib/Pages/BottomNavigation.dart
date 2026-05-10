@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rental_room/Pages/Chat/ChatPage.dart';
 import 'package:rental_room/Pages/Home/HomePage.dart';
 import 'package:rental_room/Pages/Map/LocationPage.dart';
+import 'package:rental_room/Pages/Menu/1_PersonalPage.dart';
 import 'package:rental_room/Pages/Menu/3_AccountPage.dart';
 import 'package:rental_room/Pages/Menu/MenuPage.dart';
 import 'package:rental_room/style/color.dart';
@@ -17,13 +18,15 @@ class _BottomnavigationState extends State<Bottomnavigation> {
   
   int indexSelected = 3;
   
-  final List<Widget> _pages = [HomePage(), MapPage(), Chatpage(),AccountPage()];
+  final List<Widget> _pages = [HomePage(), MapPage(), Chatpage(),PersonalPage()];
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[indexSelected],
-      bottomNavigationBar: Container(
+      bottomNavigationBar: MediaQuery.of(context).viewInsets.bottom > 0
+          ? null
+          : Container(
         margin: EdgeInsets.all(15),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(25),
