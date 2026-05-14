@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rental_room/style/color.dart';
 
 class PasswordField extends StatelessWidget {
 
@@ -20,21 +21,52 @@ class PasswordField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return TextField(
+    return TextFormField(
       controller: controller,
       obscureText: obscureText,
+
       decoration: InputDecoration(
+
         labelText: label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
+
+        labelStyle: TextStyle(
+          color: colorsyle.textPrimary,
         ),
-        prefixIcon: Icon(icon),
+
+        prefixIcon: Icon(
+          icon,
+          color: colorsyle.primary,
+        ),
+
         suffixIcon: IconButton(
           onPressed: onToggle,
           icon: Icon(
             obscureText
                 ? Icons.visibility_off
                 : Icons.visibility,
+            color: colorsyle.primary,
+          ),
+        ),
+
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(17),
+          borderSide: BorderSide(
+            color: colorsyle.primary,
+          ),
+        ),
+
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(17),
+          borderSide: BorderSide(
+            color: colorsyle.primary,
+          ),
+        ),
+
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(17),
+          borderSide: BorderSide(
+            color: colorsyle.primary,
+            width: 2,
           ),
         ),
       ),

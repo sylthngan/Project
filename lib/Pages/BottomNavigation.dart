@@ -2,24 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:rental_room/Pages/Chat/ChatPage.dart';
 import 'package:rental_room/Pages/Home/HomePage.dart';
 import 'package:rental_room/Pages/Map/LocationPage.dart';
-import 'package:rental_room/Pages/Menu/1_PersonalPage.dart';
-import 'package:rental_room/Pages/Menu/3_AccountPage.dart';
+
 import 'package:rental_room/Pages/Menu/MenuPage.dart';
 import 'package:rental_room/style/color.dart';
 
 class Bottomnavigation extends StatefulWidget {
   const Bottomnavigation({super.key});
-
   @override
   State<Bottomnavigation> createState() => _BottomnavigationState();
 }
 
 class _BottomnavigationState extends State<Bottomnavigation> {
-  
-  int indexSelected = 3;
-  
-  final List<Widget> _pages = [HomePage(), MapPage(), Chatpage(),PersonalPage()];
-  
+
+  int indexSelected = 0;
+
+  final List<Widget> _pages = [HomePage(), MapPage(), Chatpage(),Menupage()];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,6 +27,7 @@ class _BottomnavigationState extends State<Bottomnavigation> {
           : Container(
         margin: EdgeInsets.all(15),
         decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(25),
           boxShadow: [
             BoxShadow(
@@ -41,7 +40,6 @@ class _BottomnavigationState extends State<Bottomnavigation> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(25),
           child: BottomNavigationBar(
-            backgroundColor: Colors.red,
             selectedItemColor: colorsyle.primary,
             unselectedItemColor: colorsyle.textPrimary,
             currentIndex: indexSelected,

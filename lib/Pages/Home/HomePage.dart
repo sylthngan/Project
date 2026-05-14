@@ -1,10 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:rental_room/Model/Post.dart';
-import 'package:rental_room/Pages/Home/SearchBar.dart';
-import 'package:rental_room/style/color.dart';
-import 'package:rental_room/style/styleButton_Text.dart';
+import 'package:rental_room/Pages/Home/DetailPost.dart';
+import 'package:rental_room/Pages/Home/SearchPage.dart';
+import 'package:rental_room/Pages/Map/LocationPage.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,261 +16,581 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String name = "";
-  String avt = "";
-  TextEditingController searchController = TextEditingController();
 
-  Future<void> getUser_Avt() async {
-    final user = FirebaseAuth.instance.currentUser;
+  final currency = NumberFormat.currency(
+    locale: 'vi_VN',
+    symbol: '₫',
+  );
 
-    if(user == null) return;
+  String selectedCategory = 'All';
 
-    final doc = await FirebaseFirestore.instance.collection("users").doc(user.uid).get();
-    if (!mounted) return;
-
-    setState(() {
-      name = doc["fullName"] ?? "";
-      avt = doc["avatar"] ?? "";
-
-    });
-  }
-  @override
-  void initState(){
-    super.initState();
-    getUser_Avt();
-  }
-  int selectedChoice = 0;
-  List<String> _choice = [
-    "House",
-    "Room",
-    "Villa"
-  ];
-
-  List<Post> _post = [
-    Post(
-      title: "Phòng trọ quận 1",
-      subtile: "",
-      img: "https://i.pinimg.com/736x/66/fe/49/66fe496bbf4d748b0b9e925bd7d5a9f3.jpg",
-      price: 3000000,
-      location: "HCM",
-    ),
-    Post(
-      title: "Căn hộ mini",
-      subtile: "",
-      img: "https://i.pinimg.com/736x/66/fe/49/66fe496bbf4d748b0b9e925bd7d5a9f3.jpg",
-      price: 4500000,
-      location: "Hà Nội",
-    ),
-    Post(
-      title: "Phòng giá rẻ",
-      subtile: "",
-      img: "https://i.pinimg.com/736x/66/fe/49/66fe496bbf4d748b0b9e925bd7d5a9f3.jpg",
-      price: 2000000,
-      location: "Đà Nẵng",
-    ),
+  final List<String> categories = [
+    'All',
+    'House',
+    'Apartment',
+    'Room',
   ];
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xfff7f7f7),
 
-    return SafeArea(
-      child: Container(
-        color: Colors.white,
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                      SizedBox(height: 10),
-                      //Introduce
-                      Row(
-                        spacing: 5,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          avt.isNotEmpty ?
-                          Container(
-                            padding: EdgeInsetsGeometry.all(5),
-                            decoration: BoxDecoration(
-                                color: colorsyle.primary,
-                                borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: CircleAvatar(
-                              backgroundImage: avt.isNotEmpty? NetworkImage(avt):null,
-
-                            ),
-
-                          ): Container(
-                            padding: EdgeInsetsGeometry.all(10),
-                            decoration: BoxDecoration(
-                                color: colorsyle.primary,
-                                borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: CircleAvatar(
-                              child: avt.isEmpty
-                                  ? Icon(Icons.perm_identity_rounded, color: Colors.white)
-                                  : null,
-                            ),
-
-                          ),
-                          Container(
-                            padding: EdgeInsetsGeometry.fromLTRB(15,5, 15,5),
-                            decoration: BoxDecoration(
-                              color: colorsyle.primary,
-                              border: Border.all(
-                                color: colorsyle.primary
-                              ),
-                              borderRadius: BorderRadius.circular(12)
-                            ),
-
-                            child: Text(
-                                name.isEmpty ? "Loading.." : name,
-                                style: Text_Button_Styles.text1,
-                            ),
-                          ),
-                          Spacer(),
-
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                          'Discover',
-                        style: Text_Button_Styles.text2,
-                      ),
-                      Text(
-                          'Your Perfect Space',
-                        style: Text_Button_Styles.text2,
-                      ),
-
-                  ]
-              ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Colors.black,
+        elevation: 2,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const MapPage(),
             ),
+          );
+        },
+        icon: const Icon(Icons.map, color: Colors.white),
+        label: const Text(
+          'Map',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
           ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: Searchbar(
-                searchController: searchController,
-                choice: _choice,
-                selectedIndex: selectedChoice,
-                onChanged: (index) {
-                  setState(() {
-                    selectedChoice = index;
-                  });
-                },
-              ),
-            ),
+        ),
+      ),
 
-            // TITLE
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(25, 10, 0, 10),
-                child: Text(
-                  'Nearby',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+      body: SafeArea(
+        child: Column(
+          children: [
 
-            // LIST
-            SliverGrid(
-              delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                  final post = _post[index];
+            Expanded(
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
 
-                  return Container(
-                    margin: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                    height: 200,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: Stack(
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
 
-                          Positioned.fill(
-                            child: Image.network(
-                              post.img,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                          _buildHeader(),
 
-                          Positioned.fill(
-                            child: Container(
-                              color: Colors.black.withOpacity(0.25),
-                            ),
-                          ),
+                          const SizedBox(height: 30),
 
-                          Positioned(
-                            bottom: 10,
-                            right: 10,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white.withOpacity(0.3)),
-                              ),
-                              child: Text(
-                                "${post.price} VND",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
+                          _buildTitle(),
 
-                          Positioned(
-                            top: 10,
-                            left: 10,
-                            right: 10,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
+                          const SizedBox(height: 25),
 
-                                Text(
-                                  post.title,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                          _buildSearchBar(),
 
-                                SizedBox(height: 5),
+                          const SizedBox(height: 25),
 
-                                Row(
-                                  children: [
-                                    Icon(Icons.location_on, color: Colors.white70, size: 16),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      post.location,
-                                      style: TextStyle(color: Colors.white70),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
+                          _buildCategoryList(),
 
+                          const SizedBox(height: 30),
+
+                          _buildSectionTitle(),
+
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
-                  );
-                },
-                childCount: _post.length,
+                  ),
 
-              ),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 5,
-                childAspectRatio: 1.0,
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('posts')
+                        .orderBy('createdAt', descending: true)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const SliverFillRemaining(
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      }
+
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return const SliverFillRemaining(
+                          child: Center(
+                            child: Text('No Posts Found'),
+                          ),
+                        );
+                      }
+
+                      List<PostModel> posts = snapshot.data!.docs
+                          .map((e) => PostModel.fromMap(
+                        e.data() as Map<String, dynamic>,
+                      ))
+                          .toList();
+
+                      if (selectedCategory != 'All') {
+                        posts = posts.where((e) {
+                          return e.type.toLowerCase() ==
+                              selectedCategory.toLowerCase();
+                        }).toList();
+                      }
+
+                      return SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                              return _buildPostCard(posts[index]);
+                            },
+                            childCount: posts.length,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 120),
+                  ),
+                ],
               ),
             ),
-          ]
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+
+              Text(
+                'Hi, User!',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              SizedBox(height: 5),
+
+              Row(
+                children: [
+                  Icon(
+                    Icons.location_on,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
+
+                  SizedBox(width: 4),
+
+                  Text(
+                    'Da Nang City',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 10,
+                color: Colors.black.withOpacity(0.05),
+              )
+            ],
+          ),
+          child: const Icon(Icons.notifications_none),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTitle() {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        Text(
+          'Discover',
+          style: TextStyle(
+            fontSize: 34,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+
+        SizedBox(height: 5),
+
+        Text(
+          'your new house!',
+          style: TextStyle(
+            fontSize: 34,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Row(
+      children: [
+
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>  SearchPage(),
+                ),
+              );
+            },
+            child: Container(
+              height: 60,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 10,
+                    color: Colors.black.withOpacity(0.04),
+                  )
+                ],
+              ),
+              child: const Row(
+                children: [
+
+                  Icon(
+                    Icons.search,
+                    color: Colors.grey,
+                  ),
+
+                  SizedBox(width: 10),
+
+                  Text(
+                    'Search house...',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 15),
+
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Icon(
+            Icons.tune,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryList() {
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+
+          final category = categories[index];
+
+          final isSelected = selectedCategory == category;
+
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedCategory = category;
+              });
+            },
+            child: Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 25,
+              ),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Colors.black
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 10,
+                    color: Colors.black.withOpacity(0.04),
+                  )
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  category,
+                  style: TextStyle(
+                    color: isSelected
+                        ? Colors.white
+                        : Colors.black,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: const [
+
+        Text(
+          'Property Nearby',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        Text(
+          'See All',
+          style: TextStyle(
+            color: Colors.grey,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPostCard(PostModel post) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DetailPage(post: post),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 25),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+              color: Colors.black.withOpacity(0.05),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            Stack(
+              children: [
+
+                Hero(
+                  tag: post.postId,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                    child: CachedNetworkImage(
+                      imageUrl: post.images.first,
+                      height: 240,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  top: 20,
+                  right: 20,
+                  child: Container(
+                    width: 45,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.favorite_border,
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  left: 20,
+                  bottom: 20,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Text(
+                      currency.format(post.price),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+
+                      Expanded(
+                        child: Text(
+                          post.title,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Text(
+                          post.type,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  Row(
+                    children: [
+
+                      const Icon(
+                        Icons.location_on,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
+
+                      const SizedBox(width: 5),
+
+                      Expanded(
+                        child: Text(
+                          '${post.street}, ${post.district}, ${post.city}',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+
+                      _featureItem(
+                        Icons.bed,
+                        '${post.bedroom} Bedroom',
+                      ),
+
+                      _featureItem(
+                        Icons.bathtub,
+                        '${post.bathroom} Bathroom',
+                      ),
+
+                      _featureItem(
+                        Icons.square_foot,
+                        '${post.area} m²',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _featureItem(IconData icon, String text) {
+    return Row(
+      children: [
+
+        Icon(
+          icon,
+          size: 18,
+          color: Colors.grey,
+        ),
+
+        const SizedBox(width: 6),
+
+        Text(
+          text,
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }

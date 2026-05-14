@@ -6,6 +6,7 @@ class colorsyle {
   static final textSecondary = Color(0xFF031239);
   static final text3 = Color(0xFF131239);
   static final text2 = Color(0xFF151B5C);
+  static final text4 = Color(0xFFE0E2FF);
 
 
 }

@@ -34,6 +34,10 @@ class Text_Button_Styles {
     fontWeight: FontWeight.bold,
     color: colorsyle.primary,
   );
+  static final text7 = TextStyle(
+    fontSize: 20,
+    color: Colors.grey,
+  );
   static final text1 = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w600,
@@ -41,6 +45,11 @@ class Text_Button_Styles {
   );
   static final text5 = TextStyle(
     fontSize: 15,
+    color: colorsyle.textPrimary,
+  );
+  static final text8 = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
     color: colorsyle.textPrimary,
   );
   static final text4 = TextStyle(

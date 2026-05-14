@@ -1,3 +1,4 @@
+
 {
   "project_info": {
     "project_number": "304068882167",
@@ -12,7 +13,20 @@
           "package_name": "com.example.rental_room"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "304068882167-erdm70pjsn56a0rr9b2uii0cfqnedtdl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.rental_room",
+            "certificate_hash": "acd67230e7102c6c01c2dc2ce9e80ef230b87a00"
+          }
+        },
+        {
+          "client_id": "304068882167-fulgqdoo4j7jl6357f8smlrqp9ub363j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAVitBYIsaD42RrFSFBZNA4y47URQeAz5E"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "304068882167-fulgqdoo4j7jl6357f8smlrqp9ub363j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

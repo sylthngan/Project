@@ -10,12 +10,17 @@ class PersonalPage extends StatefulWidget {
 class _PersonalPageState extends State<PersonalPage> {
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Column(
-          children: [
-
-          ],
-        )
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Persional Page'),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+          child: Column(
+            children: [
+              ],
+          )
+      ),
     );
   }
 }

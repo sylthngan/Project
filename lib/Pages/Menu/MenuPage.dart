@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:rental_room/Pages/Menu/1_PersonalPage.dart';
+import 'package:rental_room/Pages/Menu/PersonalPage/1_PersonalPage.dart';
 import 'package:rental_room/Pages/Menu/2_ProfilePage.dart';
 import 'package:rental_room/Pages/Menu/3_AccountPage.dart';
 import 'package:rental_room/Pages/Menu/4_ContractPage.dart';
@@ -25,6 +25,7 @@ class _Menupage extends State<Menupage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            //Detail 1
             GestureDetector(
               onTap: (){
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> PersonalPage()));
