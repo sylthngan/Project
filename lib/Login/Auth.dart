@@ -27,6 +27,7 @@ class AuthService {
       "birthday": birthday,
       "avatar": "",
       "location": "",
+      "isLandlord": false,
       "createdAt": FieldValue.serverTimestamp(),
     });
 
@@ -34,12 +35,26 @@ class AuthService {
   }
 
   Future<User?> login(String email, String password) async {
-    UserCredential result =
-    await auth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
 
-    return result.user;
+    try {
+      UserCredential result =
+      await auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return result.user;
+    } on FirebaseAuthException catch (e) {
+
+      if(e.code == 'user-not-found'){
+        throw 'Email does not exist';
+      }
+      if(e.code == 'wrong-password'){
+        throw 'Wrong password';
+      }
+      if(e.code == 'invalid-email'){
+        throw 'Invalid email';
+      }
+      throw 'Login failed';
+    }
   }
 }

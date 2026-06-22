@@ -25,6 +25,13 @@ class _LoginState extends State<Login> {
   final AuthService authService = AuthService();
   final AuthGg authGg = AuthGg();
   bool hidePassword = true;
+  bool isLoading = false;
+  @override
+  void dispose() {
+    emailController.dispose();
+    passController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -39,6 +46,7 @@ class _LoginState extends State<Login> {
                     'lib/img/Auth1.jpg',
                   width: 500,
                   height: 200,
+                  fit: BoxFit.cover,
                 ),
                 Column  (
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -58,43 +66,49 @@ class _LoginState extends State<Login> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 35),
-          
+                    const SizedBox(height: 15),
+
                     //field input
-                    myTextField(
-                        label: "Email",
-                        controller: emailController,
-                        isPass: false,
-                        icon: Icons.mail,
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          myTextField(
+                              label: "Email",
+                              controller: emailController,
+                              isPass: false,
+                              icon: Icons.mail,
 
+                          ),
+                          const SizedBox(height: 15),
+                          PasswordField(
+                            controller: passController,
+                            label: "Password",
+                            obscureText: hidePassword,
+
+                            onToggle: () {
+                              setState(() {
+                                hidePassword = !hidePassword;
+                              });
+                            },
+
+                            icon: Icons.lock,
+                          ),
+                        ],
+                      ),
                     ),
-                    SizedBox(height: 25),
-                    PasswordField(
-                      controller: passController,
-                      label: "Password",
-                      obscureText: hidePassword,
-
-                      onToggle: () {
-                        setState(() {
-                          hidePassword = !hidePassword;
-                        });
-                      },
-
-                      icon: Icons.lock,
-                    ),
-                    SizedBox(height: 40),
+                    const SizedBox(height: 20),
 
                     //button Login
                     SizedBox(
                       width: double.infinity,
-                      height: 50,
+                      height: 45,
                       child: loginButton(),
                     ),
-                    SizedBox(height: 40),
+                    const SizedBox(height: 30),
                     //
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(30.0,0,30,0),
-                      child: Row(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),                      child: Row(
                         children: [
                           Expanded(
                             child: Divider(
@@ -113,10 +127,10 @@ class _LoginState extends State<Login> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 28),
+                    const SizedBox(height: 25),
                     //sign with gg
                     loginWithGG(),
-                    SizedBox(height: 25),
+                    const SizedBox(height: 25),
                     //Navigator to register
                     toRegister(context)
                   ],
@@ -136,12 +150,13 @@ class _LoginState extends State<Login> {
         },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+
         children: [
           Text(
               'Don\'t have an account?',
               style: Text_Button_Styles.subtitle
           ),
-          SizedBox(width: 5),
+          const SizedBox(width: 5),
           Text(
             'Sign up',
             style: Text_Button_Styles.subtitle1,
@@ -157,31 +172,24 @@ class _LoginState extends State<Login> {
           try {
             final user = await authGg.signInWithGoogle();
             if (!mounted) return;
-            if (user != null) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const Checkauth()),
-                    (route) => false,
-              );
-            } else {
+            if (user == null) {
               displayMessage("User cancelled login");
             }
-
           } catch (e) {
-            print(e);
+            debugPrint(e.toString());
             displayMessage("Google sign-in failed");
           }
         },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 40),
+        width: double.infinity,
         decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
                 color: Colors.black12,
-                blurRadius: 5,
-                offset: Offset(3, 3),
+                blurRadius: 2,
+                offset: Offset(1, 2),
               )
             ]
         ),
@@ -194,7 +202,7 @@ class _LoginState extends State<Login> {
                 width: 40,
                 height: 50,
               ),
-              SizedBox(width: 5),
+              const SizedBox(width: 5),
               Text(
                 'Sign in with Google',
                 style: Text_Button_Styles.text_button2,
@@ -208,29 +216,58 @@ class _LoginState extends State<Login> {
   // login button
   ElevatedButton loginButton() {
     return ElevatedButton(
-      onPressed: () async{
+      style: Text_Button_Styles.button1,
+      onPressed: isLoading ? null : () async {
+        if(emailController.text.trim().isEmpty){
+          displayMessage("Enter email");
+          return;
+        }
+
+        if(passController.text.trim().isEmpty){
+          displayMessage("Enter password");
+          return;
+        }
+        if(isLoading) return;
+        setState(() {
+          isLoading = true;
+        });
         try {
           await authService.login(
-            emailController.text,
-            passController.text,
+            emailController.text.trim(),
+            passController.text.trim(),
           );
+          if (!mounted) return;
 
-          displayMessage("Login success");
         } catch (e) {
-          displayMessage("Login failed");
+          displayMessage(e.toString());
+        }finally {
+
+          if(mounted){
+            setState(() {
+              isLoading = false;
+            });
+          }
         }
-        },
-      child: Text(
+      },
+      child: isLoading ? const SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: Colors.white,
+        ),
+      ) : Text(
         'Sign in',
         style: Text_Button_Styles.text_button,
       ),
-      style: Text_Button_Styles.button1,
     );
   }
 
   void displayMessage(String message){
-    showDialog(context: context, builder: (context)=>AlertDialog(
-      title: Text(message),
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
   }
 }

@@ -21,52 +21,62 @@ class PasswordField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-
-      decoration: InputDecoration(
-
-        labelText: label,
-
-        labelStyle: TextStyle(
-          color: colorsyle.textPrimary,
+    return SizedBox(
+      height: 45,
+      child: TextFormField(
+        controller: controller,
+        obscureText: obscureText,
+        style: TextStyle(
+          fontSize: 13,
         ),
+        decoration: InputDecoration(
 
-        prefixIcon: Icon(
-          icon,
-          color: colorsyle.primary,
-        ),
+          labelText: label,
 
-        suffixIcon: IconButton(
-          onPressed: onToggle,
-          icon: Icon(
-            obscureText
-                ? Icons.visibility_off
-                : Icons.visibility,
-            color: colorsyle.primary,
+          labelStyle: TextStyle(
+            color: colorsyle.textPrimary,
+            fontSize: 13,
+
           ),
-        ),
 
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(17),
-          borderSide: BorderSide(
+          prefixIcon: Icon(
+            icon,
             color: colorsyle.primary,
+            size: 20
           ),
-        ),
 
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(17),
-          borderSide: BorderSide(
-            color: colorsyle.primary,
+          suffixIcon: IconButton(
+            onPressed: onToggle,
+            icon: Icon(
+              obscureText
+                  ? Icons.visibility_off
+                  : Icons.visibility,
+              color: colorsyle.primary,
+                size: 15
+
+            ),
           ),
-        ),
 
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(17),
-          borderSide: BorderSide(
-            color: colorsyle.primary,
-            width: 2,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(17),
+            borderSide: BorderSide(
+              color: colorsyle.primary,
+            ),
+          ),
+
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(17),
+            borderSide: BorderSide(
+              color: colorsyle.primary,
+            ),
+          ),
+
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(17),
+            borderSide: BorderSide(
+              color: colorsyle.primary,
+              width: 2,
+            ),
           ),
         ),
       ),

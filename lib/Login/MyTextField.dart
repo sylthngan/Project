@@ -19,43 +19,51 @@ class myTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return TextFormField(
+    return SizedBox(
+      height: 45,
 
-      controller: controller,
-      obscureText: isPass,
+      child: TextFormField(
 
-      decoration: InputDecoration(
-
-        labelText: label,
-
-        labelStyle: TextStyle(
-          color: colorsyle.textPrimary,
+        controller: controller,
+        obscureText: isPass,
+        style: TextStyle(
+          fontSize: 13,
         ),
+        decoration: InputDecoration(
 
-        prefixIcon: Icon(
-          icon,
-          color: colorsyle.primary,
-        ),
+          labelText: label,
 
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(17),
-          borderSide: BorderSide(
-            color: colorsyle.primary,
+          labelStyle: TextStyle(
+            fontSize: 13,
+            color: colorsyle.textPrimary,
           ),
-        ),
-
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(17),
-          borderSide: BorderSide(
+          prefixIcon: Icon(
+            icon,
             color: colorsyle.primary,
+              size: 20
+
           ),
-        ),
 
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(17),
-          borderSide: BorderSide(
-            color: colorsyle.primary,
-            width: 2,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(17),
+            borderSide: BorderSide(
+              color: colorsyle.primary,
+            ),
+          ),
+
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(17),
+            borderSide: BorderSide(
+              color: colorsyle.primary,
+            ),
+          ),
+
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(17),
+            borderSide: BorderSide(
+              color: colorsyle.primary,
+              width: 2,
+            ),
           ),
         ),
       ),

@@ -129,7 +129,7 @@ class _CityPickState extends State<CityPick> {
                     child: Text(
                       "Reset",
                       style: TextStyle(
-                        color: colorsyle.primary,
+                        color: Colors.blueGrey,
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
@@ -184,7 +184,7 @@ class _CityPickState extends State<CityPick> {
                         Expanded(
                           child: Text(
                             selectedCity ?? "Choose city",
-                              style: selectedCity == null ?Text_Button_Styles.text6 : Text_Button_Styles.text7
+                              style: selectedCity == null ?Text_Button_Styles.text6 : Text_Button_Styles.text61
                           ),
                         ),
                       ],
@@ -245,7 +245,7 @@ class _CityPickState extends State<CityPick> {
                             selectedWard?.isNotEmpty == true ? selectedWard! : "Choose ward/commune",
                             style: selectedCity != null && (selectedWard == null || selectedWard!.isEmpty)
                                 ? Text_Button_Styles.text6
-                                : Text_Button_Styles.text7
+                                : Text_Button_Styles.text61
                           ),
                         ),
                       ],

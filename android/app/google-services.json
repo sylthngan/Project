@@ -1,21 +1,20 @@
-
 {
   "project_info": {
-    "project_number": "304068882167",
-    "project_id": "rentalroom-24898",
-    "storage_bucket": "rentalroom-24898.firebasestorage.app"
+    "project_number": "33067110554",
+    "project_id": "rentalroom-afdec",
+    "storage_bucket": "rentalroom-afdec.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:304068882167:android:4a8de1156b05ac1a91adf2",
+        "mobilesdk_app_id": "1:33067110554:android:76d42ad4120f4df00d8f23",
         "android_client_info": {
           "package_name": "com.example.rental_room"
         }
       },
       "oauth_client": [
         {
-          "client_id": "304068882167-erdm70pjsn56a0rr9b2uii0cfqnedtdl.apps.googleusercontent.com",
+          "client_id": "33067110554-63d1jjn9a961e39k2ikb25t4cvvnvsct.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.rental_room",
@@ -23,21 +22,28 @@
           }
         },
         {
-          "client_id": "304068882167-fulgqdoo4j7jl6357f8smlrqp9ub363j.apps.googleusercontent.com",
+          "client_id": "33067110554-5e4vudgn9196um61tdddiobf7cct2dl4.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAVitBYIsaD42RrFSFBZNA4y47URQeAz5E"
+          "current_key": "AIzaSyCbdWOqF4h15JSps9q2P3FY13kA4vp4zhE"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "304068882167-fulgqdoo4j7jl6357f8smlrqp9ub363j.apps.googleusercontent.com",
+              "client_id": "33067110554-5e4vudgn9196um61tdddiobf7cct2dl4.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "33067110554-5lj6hrn9dml71stdrdakud31cgp89fl6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ngan.rental-room"
+              }
             }
           ]
         }

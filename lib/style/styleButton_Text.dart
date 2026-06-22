@@ -3,13 +3,13 @@ import 'package:rental_room/style/color.dart';
 
 class Text_Button_Styles {
   static final title1 = TextStyle(
-      fontSize: 30,
+      fontSize: 22,
       fontWeight: FontWeight.bold,
       color: colorsyle.primary,
   );
 
   static final title2 = TextStyle(
-    fontSize: 30,
+    fontSize: 22,
     fontWeight: FontWeight.bold,
     color: colorsyle.textPrimary,
 
@@ -20,19 +20,23 @@ class Text_Button_Styles {
     color: colorsyle.textPrimary,
   );
   static final text2 = TextStyle(
-    fontSize: 27,
+    fontSize: 23,
     fontWeight: FontWeight.bold,
     color: colorsyle.primary,
   );
   static final text3 = TextStyle(
-    fontSize: 17,
+    fontSize: 13,
     fontWeight: FontWeight.bold,
     color: colorsyle.text2,
   );
   static final text6 = TextStyle(
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: FontWeight.bold,
     color: colorsyle.primary,
+  );
+  static final text61 = TextStyle(
+    fontSize: 15,
+    color: Colors.grey,
   );
   static final text7 = TextStyle(
     fontSize: 20,
@@ -44,16 +48,16 @@ class Text_Button_Styles {
     color: Colors.white,
   );
   static final text5 = TextStyle(
-    fontSize: 15,
+    fontSize: 12,
     color: colorsyle.textPrimary,
   );
   static final text8 = TextStyle(
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: FontWeight.w600,
     color: colorsyle.textPrimary,
   );
   static final text4 = TextStyle(
-    fontSize: 12,
+    fontSize: 13,
     color: colorsyle.textPrimary,
   );
   static final subtitle1 = TextStyle(
@@ -61,12 +65,12 @@ class Text_Button_Styles {
     color: colorsyle.text3,
   );
   static final text_button = TextStyle(
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: FontWeight.bold,
     color: Colors.white,
   );
   static final text_button2 = TextStyle(
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: FontWeight.bold,
     color: Colors.blueGrey[800],
   );

@@ -6,6 +6,7 @@ class UserModel {
   final String avatar;
   final String phone;
   final String location;
+  final bool isLandlord;
   UserModel({
     required this.uid,
     required this.fullName,
@@ -14,6 +15,7 @@ class UserModel {
     required this.avatar,
     required this.phone,
     required this.location,
+    required this.isLandlord,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data, String documentId) {
@@ -25,6 +27,7 @@ class UserModel {
       avatar: data["avatar"] ?? "",
       phone: data["phone"] ?? "",
       location: data["location"] ?? "",
+      isLandlord: data["isLandlord"] ?? false,
     );
   }
 
@@ -36,6 +39,7 @@ class UserModel {
       "avatar": avatar,
       "phone": phone,
       "location": location,
+      "isLandlord": isLandlord,
     };
   }
 }

@@ -35,7 +35,7 @@ class _RegisterState extends State<Register> {
           backgroundColor: Colors.white,
           body: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsetsGeometry.all(15.0),
+              padding: EdgeInsets.all(15.0),
               child: Column  (
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,7 +55,7 @@ class _RegisterState extends State<Register> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 35),
+                  SizedBox(height: 25),
 
                   //field input
                   myTextField(
@@ -65,40 +65,48 @@ class _RegisterState extends State<Register> {
                       icon: Icons.person,
 
                   ),
-                  SizedBox(height: 25),
+                  SizedBox(height: 15),
                   //field birthday
-                  TextFormField(
-                    controller: birthController,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: "Date of Birth",
-                      prefixIcon: Icon(Icons.cake),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(17)
+                  SizedBox(
+                    height: 45,
+                    child: TextFormField(
+
+                      controller: birthController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: "Date of Birth",
+                        prefixIcon: Icon(Icons.cake),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(17)
+                        ),
+                        labelStyle: TextStyle(
+                          fontSize: 13,
+                          color: colorsyle.textPrimary,
+                        ),
                       ),
+
+                      onTap: () async {
+                        DateTime? pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime(2000),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                        );
+
+                        if (pickedDate != null) {
+                          String formattedDate =
+                              "${pickedDate.day.toString().padLeft(2, '0')}/"
+                              "${pickedDate.month.toString().padLeft(2, '0')}/"
+                              "${pickedDate.year}";
+
+                          setState(() {
+                            birthController.text = formattedDate;
+                          });
+                        }
+                      },
                     ),
-
-                    onTap: () async {
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime(2000),
-                        firstDate: DateTime(1900),
-                        lastDate: DateTime.now(),
-                      );
-
-                      if (pickedDate != null) {
-                        String formattedDate =
-                            "${pickedDate.day.toString().padLeft(2, '0')}/"
-                            "${pickedDate.month.toString().padLeft(2, '0')}/"
-                            "${pickedDate.year}";
-
-                        setState(() {
-                          birthController.text = formattedDate;
-                        });
-                      }
-                    },
                   ),
-                  SizedBox(height: 25),
+                  SizedBox(height: 15),
                   myTextField(
                       label: "Email",
                       controller: emailController,
@@ -106,7 +114,7 @@ class _RegisterState extends State<Register> {
                       icon: Icons.mail,
 
                   ),
-                  SizedBox(height: 25),
+                  SizedBox(height: 15),
                   PasswordField(
                     controller: passController,
                     label: "Password",
@@ -120,9 +128,9 @@ class _RegisterState extends State<Register> {
 
                     icon: Icons.lock,
                   ),
-                  SizedBox(height: 25),
+                  SizedBox(height: 15),
                   PasswordField(
-                    controller: passController,
+                    controller: confirmController,
                     label: "Confirm Password",
                     obscureText: hidePassword,
 
@@ -134,17 +142,17 @@ class _RegisterState extends State<Register> {
 
                     icon: Icons.lock,
                   ),
-                  SizedBox(height: 25),
+                  SizedBox(height: 15),
                   myTextField(
                     label: "Phone",
                     controller: phoneController,
                     isPass: false,
                     icon: Icons.phone,
                   ),
-                  SizedBox(height: 40),
+                  SizedBox(height: 30),
                   //button register
                   registerButton(context),
-                  SizedBox(height: 40),
+                  SizedBox(height: 30),
                   //
                   Padding(
                     padding: const EdgeInsets.fromLTRB(30.0,0,30,0),

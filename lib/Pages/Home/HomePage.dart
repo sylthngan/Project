@@ -1,12 +1,13 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:rental_room/Model/Post.dart';
-import 'package:rental_room/Pages/Home/DetailPost.dart';
+import 'package:rental_room/Pages/Home/PostCard.dart';
+import 'package:rental_room/Pages/Home/PostService.dart';
 import 'package:rental_room/Pages/Home/SearchPage.dart';
 import 'package:rental_room/Pages/Map/LocationPage.dart';
-
+import 'package:rental_room/style/color.dart';
+import 'package:rental_room/style/styleButton_Text.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,580 +17,246 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final PostService postService = PostService();
+  final ScrollController _scrollController = ScrollController();
+  final NumberFormat currency = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
 
-  final currency = NumberFormat.currency(
-    locale: 'vi_VN',
-    symbol: '₫',
-  );
-
+  final List<String> categories = ['All', 'House', 'Apartment', 'Room'];
+  List<PostModel> allPosts = [];
+  List<PostModel> filteredPosts = [];
   String selectedCategory = 'All';
 
-  final List<String> categories = [
-    'All',
-    'House',
-    'Apartment',
-    'Room',
-  ];
+  bool isLoading = true;
+  bool isLoadingMore = false;
+  bool hasMore = true;
+  DocumentSnapshot? lastDocument;
+
+  @override
+  void initState() {
+    super.initState();
+    loadPosts();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    if (currentScroll >= maxScroll - 200) {
+      loadMorePosts();
+    }
+  }
+
+  Future<void> loadPosts() async {
+    try {
+      final result = await postService.getPosts();
+      if (!mounted) return;
+      setState(() {
+        allPosts = result['posts'];
+        filteredPosts = List.from(allPosts);
+        lastDocument = result['lastDocument'];
+        isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> loadMorePosts() async {
+    if (isLoadingMore || !hasMore || lastDocument == null) return;
+    setState(() => isLoadingMore = true);
+    try {
+      final result = await postService.getPosts(lastDocument: lastDocument);
+      if (result['posts'].isEmpty) {
+        setState(() {
+          hasMore = false;
+          isLoadingMore = false;
+        });
+        return;
+      }
+      allPosts.addAll(result['posts']);
+      filterPosts(selectedCategory);
+      setState(() {
+        lastDocument = result['lastDocument'];
+        isLoadingMore = false;
+      });
+    } catch (e) {
+      setState(() => isLoadingMore = false);
+    }
+  }
+
+  Future<void> refreshPosts() async {
+    allPosts.clear();
+    filteredPosts.clear();
+    lastDocument = null;
+    hasMore = true;
+    setState(() => isLoading = true);
+    await loadPosts();
+  }
+
+  void filterPosts(String category) {
+    selectedCategory = category;
+    if (category == 'All') {
+      filteredPosts = List.from(allPosts);
+    } else {
+      filteredPosts = allPosts.where((post) => post.type.toLowerCase() == category.toLowerCase()).toList();
+    }
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xfff7f7f7),
-
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Colors.black,
-        elevation: 2,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const MapPage(),
-            ),
-          );
-        },
-        icon: const Icon(Icons.map, color: Colors.white),
-        label: const Text(
-          'Map',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        backgroundColor: colorsyle.primary,
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MapPage())),
+        icon: const Icon(Icons.map, color: Colors.white, size: 17),
+        label: const Text('Map', style: TextStyle(color: Colors.white, fontSize: 15)),
       ),
-
       body: SafeArea(
-        child: Column(
-          children: [
-
-            Expanded(
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-
-                          _buildHeader(),
-
-                          const SizedBox(height: 30),
-
-                          _buildTitle(),
-
-                          const SizedBox(height: 25),
-
-                          _buildSearchBar(),
-
-                          const SizedBox(height: 25),
-
-                          _buildCategoryList(),
-
-                          const SizedBox(height: 30),
-
-                          _buildSectionTitle(),
-
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    ),
+        child: RefreshIndicator(
+          onRefresh: refreshPosts,
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _Title(),
+                      const SizedBox(height: 20),
+                      _ShopeeSearchBar(),
+                      const SizedBox(height: 20),
+                      _CategoryList(),
+                      const SizedBox(height: 25),
+                      _buildTitle_List(),
+                    ],
                   ),
-
-                  StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('posts')
-                        .orderBy('createdAt', descending: true)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const SliverFillRemaining(
-                          child: Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return const SliverFillRemaining(
-                          child: Center(
-                            child: Text('No Posts Found'),
-                          ),
-                        );
-                      }
-
-                      List<PostModel> posts = snapshot.data!.docs
-                          .map((e) => PostModel.fromMap(
-                        e.data() as Map<String, dynamic>,
-                      ))
-                          .toList();
-
-                      if (selectedCategory != 'All') {
-                        posts = posts.where((e) {
-                          return e.type.toLowerCase() ==
-                              selectedCategory.toLowerCase();
-                        }).toList();
-                      }
-
-                      return SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                                (context, index) {
-                              return _buildPostCard(posts[index]);
-                            },
-                            childCount: posts.length,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 120),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-
-              Text(
-                'Hi, User!',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
-
-              SizedBox(height: 5),
-
-              Row(
-                children: [
-                  Icon(
-                    Icons.location_on,
-                    size: 16,
-                    color: Colors.grey,
+              if (isLoading)
+                const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
+              else if (filteredPosts.isEmpty)
+                const SliverFillRemaining(child: Center(child: Text('No Posts Found')))
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      if (index == filteredPosts.length) {
+                        return isLoadingMore ? const Padding(padding: EdgeInsets.all(20), child: Center(child: CircularProgressIndicator())) : const SizedBox(height: 80);
+                      }
+                      return PostCard(post: filteredPosts[index], currency: currency);
+                    }, childCount: filteredPosts.length + 1),
                   ),
-
-                  SizedBox(width: 4),
-
-                  Text(
-                    'Da Nang City',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
+                ),
             ],
           ),
         ),
-
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                blurRadius: 10,
-                color: Colors.black.withOpacity(0.05),
-              )
-            ],
-          ),
-          child: const Icon(Icons.notifications_none),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildTitle() {
-    return const Column(
+  Widget _Title() {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
-        Text(
-          'Discover',
-          style: TextStyle(
-            fontSize: 34,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-
-        SizedBox(height: 5),
-
-        Text(
-          'your new house!',
-          style: TextStyle(
-            fontSize: 34,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text('Discover', style: Text_Button_Styles.title1),
+        Text('your new places!', style: Text_Button_Styles.title1.copyWith(color: colorsyle.primary.withOpacity(0.7))),
       ],
     );
   }
 
-  Widget _buildSearchBar() {
-    return Row(
-      children: [
-
-        Expanded(
-          child: GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>  SearchPage(),
-                ),
-              );
-            },
-            child: Container(
-              height: 60,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 10,
-                    color: Colors.black.withOpacity(0.04),
-                  )
-                ],
-              ),
-              child: const Row(
-                children: [
-
-                  Icon(
-                    Icons.search,
-                    color: Colors.grey,
-                  ),
-
-                  SizedBox(width: 10),
-
-                  Text(
-                    'Search house...',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-
-        const SizedBox(width: 15),
-
-        Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Icon(
-            Icons.tune,
-            color: Colors.white,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCategoryList() {
-    return SizedBox(
-      height: 50,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-
-          final category = categories[index];
-
-          final isSelected = selectedCategory == category;
-
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                selectedCategory = category;
-              });
-            },
-            child: Container(
-              margin: const EdgeInsets.only(right: 12),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 25,
-              ),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.black
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 10,
-                    color: Colors.black.withOpacity(0.04),
-                  )
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  category,
-                  style: TextStyle(
-                    color: isSelected
-                        ? Colors.white
-                        : Colors.black,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: const [
-
-        Text(
-          'Property Nearby',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-
-        Text(
-          'See All',
-          style: TextStyle(
-            color: Colors.grey,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPostCard(PostModel post) {
+  Widget _ShopeeSearchBar() {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => DetailPage(post: post),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const SearchPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
           ),
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 25),
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 15),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(10),
           boxShadow: [
-            BoxShadow(
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-              color: Colors.black.withOpacity(0.05),
-            )
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
           ],
+          border: Border.all(color: colorsyle.primary.withOpacity(0.1)),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-
-            Stack(
-              children: [
-
-                Hero(
-                  tag: post.postId,
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
-                    child: CachedNetworkImage(
-                      imageUrl: post.images.first,
-                      height: 240,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-
-                Positioned(
-                  top: 20,
-                  right: 20,
-                  child: Container(
-                    width: 45,
-                    height: 45,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.favorite_border,
-                    ),
-                  ),
-                ),
-
-                Positioned(
-                  left: 20,
-                  bottom: 20,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Text(
-                      currency.format(post.price),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-
-                      Expanded(
-                        child: Text(
-                          post.title,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Text(
-                          post.type,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  Row(
-                    children: [
-
-                      const Icon(
-                        Icons.location_on,
-                        size: 18,
-                        color: Colors.grey,
-                      ),
-
-                      const SizedBox(width: 5),
-
-                      Expanded(
-                        child: Text(
-                          '${post.street}, ${post.district}, ${post.city}',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-
-                      _featureItem(
-                        Icons.bed,
-                        '${post.bedroom} Bedroom',
-                      ),
-
-                      _featureItem(
-                        Icons.bathtub,
-                        '${post.bathroom} Bathroom',
-                      ),
-
-                      _featureItem(
-                        Icons.square_foot,
-                        '${post.area} m²',
-                      ),
-                    ],
-                  ),
-                ],
+            Icon(Icons.search, color: colorsyle.primary, size: 22),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Search for room, apartment...',
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
               ),
             ),
+            VerticalDivider(color: Colors.grey.shade300, indent: 12, endIndent: 12),
+            Icon(Icons.camera_alt_outlined, color: colorsyle.primary, size: 22),
           ],
         ),
       ),
     );
   }
 
-  Widget _featureItem(IconData icon, String text) {
+  Widget _CategoryList() {
+    return SizedBox(
+      height: 40,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          final isSelected = selectedCategory == category;
+          return GestureDetector(
+            onTap: () => filterPosts(category),
+            child: Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? colorsyle.primary : Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: isSelected ? [BoxShadow(color: colorsyle.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
+              ),
+              child: Center(
+                child: Text(
+                  category,
+                  style: TextStyle(fontSize: 13, color: isSelected ? Colors.white : colorsyle.primary, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTitle_List() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-
-        Icon(
-          icon,
-          size: 18,
-          color: Colors.grey,
-        ),
-
-        const SizedBox(width: 6),
-
-        Text(
-          text,
-          style: const TextStyle(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        Text('Property Nearby', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorsyle.primary)),
+        Text('See All', style: TextStyle(fontSize: 13, color: colorsyle.textPrimary, fontWeight: FontWeight.w600)),
       ],
     );
   }

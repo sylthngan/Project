@@ -8,6 +8,9 @@ import 'package:rental_room/Pages/Menu/4_ContractPage.dart';
 import 'package:rental_room/style/color.dart';
 import 'package:rental_room/style/styleButton_Text.dart';
 
+import '../../Model/Post.dart';
+import '../../Model/User.dart';
+
 class Menupage extends StatefulWidget {
   const Menupage({super.key});
 
@@ -21,18 +24,76 @@ class _Menupage extends State<Menupage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(10.0, 25, 10.0, 10.0),
+        padding: const EdgeInsets.fromLTRB(10.0, 10, 10.0, 10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             //Detail 1
-            GestureDetector(
-              onTap: (){
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> PersonalPage()));
-                },
-              child: Detail1(),
+            StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseAuth.instance.currentUser == null
+                  ? null
+                  : FirebaseFirestore.instance
+                  .collection("users")
+                  .doc(FirebaseAuth.instance.currentUser!.uid)
+                  .snapshots(),
+
+              builder: (context, snapshot) {
+
+                if (FirebaseAuth.instance.currentUser == null) {
+                  return const SizedBox();
+                }
+
+                if (!snapshot.hasData) {
+                  return const SizedBox();
+                }
+
+                final data = snapshot.data!.data() as Map<String, dynamic>;
+
+                bool isLandlord = data["isLandlord"] ?? false;
+
+                if (!isLandlord) {
+                  return Detail1();
+                }
+
+                return GestureDetector(
+                  onTap: () async {
+                    final firebaseUser = FirebaseAuth.instance.currentUser;
+                    if (firebaseUser == null) return;
+
+                    final userDoc = await FirebaseFirestore.instance
+                        .collection("users")
+                        .doc(firebaseUser.uid)
+                        .get();
+
+                    UserModel userModel = UserModel.fromMap(
+                      userDoc.data()!,
+                      userDoc.id,
+                    );
+
+                    final postSnapshot = await FirebaseFirestore.instance
+                        .collection("posts")
+                        .where("uid", isEqualTo: firebaseUser.uid)
+                        .get();
+
+                    List<PostModel> posts = postSnapshot.docs.map((doc) {
+                      return PostModel.fromMap(doc.data());
+                    }).toList();
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PersonalPage(
+                          user: userModel,
+                          posts: posts,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Detail1(),
+                );
+              },
             ),
-            SizedBox(height: 15),
+            SizedBox(height: 5),
             //Detail2
             Padding(
               padding: const EdgeInsets.fromLTRB(35.0, 20.0, 0, 5),
@@ -48,17 +109,26 @@ class _Menupage extends State<Menupage> {
               ),
               child: Column(
                 children: [
+
                   GestureDetector(
                     onTap: (){
                       Navigator.push(context, MaterialPageRoute(builder: (_)=>ProfilePage()));
                     },
                     child: ListTile(
-                      leading: Icon(Icons.account_circle, color: colorsyle.text3),
+                      leading: Icon(
+                          Icons.account_circle,
+                          color: colorsyle.text3,
+                          size: 20
+                      ),
                       title: Text(
                           'Profile Information',
                         style: Text_Button_Styles.text3,
                       ),
-                      trailing: Icon(Icons.navigate_next, color: colorsyle.text3),
+                      trailing: Icon(
+                          Icons.navigate_next,
+                          color: colorsyle.text3,
+                          size: 18
+                      ),
                     ),
                   ),
                   GestureDetector(
@@ -67,12 +137,20 @@ class _Menupage extends State<Menupage> {
 
                     },
                     child: ListTile(
-                      leading: Icon(Icons.lock_person, color: colorsyle.text3),
+                      leading: Icon(
+                          Icons.lock_person,
+                          color: colorsyle.text3,
+                          size: 20
+                      ),
                       title: Text(
                           'Account Information',
                         style: Text_Button_Styles.text3,
                       ),
-                      trailing: Icon(Icons.navigate_next, color: colorsyle.text3),
+                      trailing: Icon(
+                          Icons.navigate_next,
+                          color: colorsyle.text3,
+                        size: 18
+                      ),
                     ),
                   ),
                   GestureDetector( 
@@ -80,51 +158,124 @@ class _Menupage extends State<Menupage> {
                       Navigator.push(context, MaterialPageRoute(builder: (_)=> ContractPage()));
                     },
                     child: ListTile(
-                      leading: Icon(Icons.description, color: colorsyle.text3),
+                      leading: Icon(
+                          Icons.description,
+                          color: colorsyle.text3,
+                          size: 20
+                      ),
                       title: Text(
                           'Contract Information',
                         style: Text_Button_Styles.text3,
                       ),
-                      trailing: Icon(Icons.navigate_next, color: colorsyle.text3),
+                      trailing: Icon(
+                          Icons.navigate_next,
+                          color: colorsyle.text3,
+                          size: 18
+                      ),
                     ),
+                  ),
+                  // Change to landlord
+                  StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection("users")
+                        .doc(FirebaseAuth.instance.currentUser!.uid)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const SizedBox();
+                      }
+                      final data = snapshot.data!.data() as Map<String, dynamic>;
+                      bool isLandlord = data["isLandlord"] ?? false;
+
+                      if(isLandlord){
+                        return const SizedBox();
+                      }
+
+                      return Card(
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Column(
+                          children: [
+                            SwitchListTile(
+                              value: isLandlord,
+                              onChanged: (value) async {
+                                if(value == true){
+                                  bool? confirm = await showDialog(
+                                    context: context,
+                                    builder: (context){
+                                      return AlertDialog(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                          BorderRadius.circular(20),
+                                        ),
+                                        title: const Text(
+                                          "Become a landlord",
+                                        ),
+                                        content: const Text(
+                                          "After enabling landlord mode, you can create rental posts and manage rooms.",
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: (){
+                                              Navigator.pop(context, false);
+                                            },
+                                            child: Text(
+                                                "Cancel",
+                                              style: Text_Button_Styles.text4,
+                                            ),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: (){
+                                              Navigator.pop(context, true);
+                                            },
+                                            child: Text(
+                                                "Confirm",
+                                              style: Text_Button_Styles.text4,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                  if(confirm != true){
+                                    return;
+                                  }
+                                }
+
+                                await FirebaseFirestore.instance
+                                    .collection("users")
+                                    .doc(FirebaseAuth.instance.currentUser!.uid)
+                                    .update({
+                                  "isLandlord": value,
+                                });
+                              },
+
+                              secondary: Icon(
+                                Icons.home_work,
+                                color: colorsyle.text3,
+                                size: 20
+                              ),
+                              title: Text(
+                                "Normal User Mode",
+                                style: Text_Button_Styles.text3,
+                              ),
+
+                              subtitle: Text(
+                                "Turn on to become a landlord to create rental post",
+                                style: Text_Button_Styles.text4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
             ),
-            //Detail2
-            Padding(
-              padding: const EdgeInsets.fromLTRB(35.0, 35.0, 0, 5),
-              child: Text(
-                'Others',
-                style: Text_Button_Styles.text5,
-              ),
-            ),
-            Card(
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15)
-                ),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Icon(Icons.location_on_rounded, color: colorsyle.text3),
-                      title: Text(
-                          'Location',
-                        style: Text_Button_Styles.text3,
-                      ),
-                      trailing: Icon(Icons.navigate_next, color: colorsyle.text3),
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.language, color: colorsyle.text3),
-                      title: Text(
-                          'Language',
-                        style: Text_Button_Styles.text3,
-                      ),
-                      trailing: Icon(Icons.navigate_next, color: colorsyle.text3),
-                    ),
-                  ],
-                )
-            ),
+
             Spacer(),
 
             Center(
@@ -222,7 +373,7 @@ class _Menupage extends State<Menupage> {
                   padding: const EdgeInsets.all(20.0),
                   child: avt.isNotEmpty? Container(
                     child: CircleAvatar(
-                      radius: 30,
+                      radius: 25,
                       backgroundImage: NetworkImage(
                         avt,
                       ),
@@ -237,7 +388,7 @@ class _Menupage extends State<Menupage> {
                       child: Icon(
                         Icons.perm_identity_rounded,
                         color: Colors.white,
-                        size: 37,
+                        size: 25,
                       ),
                     ),
                   ),
